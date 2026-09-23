@@ -1,0 +1,9 @@
+{"resolution":[960,540],"fps":30,"frames":[1,40],"samples":16,
+ "camera":{"hfov_deg":70,"position":[0,0,1.1],"forward":[0,0.9397,-0.3420],"up":[0,0.3420,0.9397]},
+ "light":{"azimuth_deg":235,"elevation_deg":38,"softness_deg":4,"strength":3.5,"color":"#fff1e0","ambient":0.4,"ambient_color":"#e2ddd4"},
+ "objects":[
+  {"type":"cube","name":"block","size":[0.22,0.22,0.22],"location":[0.35,2.2],"rotation_deg":20,"color":"#3d5a6c","roughness":0.4,
+   "keyframes":[{"frame":1,"scale":0.0},{"frame":14,"scale":1.0},{"frame":40,"rotation_deg":60}]},
+  {"type":"bar_chart","name":"chart","location":[-0.35,2.4],"rotation_deg":-8,"values":[0.25,0.4,0.35,0.7],"max_height":0.45,
+   "bar_width":0.08,"bar_depth":0.08,"gap":0.035,"colors":["#6b7f5e","#6b7f5e","#6b7f5e","#d98b3a"],"roughness":0.5,
+   "grow":{"start":6,"stagger":5,"duration":14}}]}
