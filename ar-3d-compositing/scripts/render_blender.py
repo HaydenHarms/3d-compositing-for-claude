@@ -17,6 +17,10 @@ dedicated venv:
     uv venv -p 3.13 bpyenv && . bpyenv/bin/activate && uv pip install bpy
     python scripts/render_blender.py scene.json --out out/render
 
+Renders on GPU by default (--device AUTO tries OptiX/CUDA/HIP/oneAPI/Metal
+in that order and falls back to CPU if none are found); pass --device CPU
+to force CPU, or e.g. --device OPTIX to require a specific backend.
+
 Output: out/render/frame_0001.png ... (straight RGBA), plus
 out/render.webm (VP8 + alpha) unless --no-webm. Frame numbers in the
 PNG names match the spec's frame numbers.
@@ -270,6 +274,36 @@ def setup_shadow_catcher(strength):
     return g
 
 
+# GPU backend priority for --device AUTO: OptiX (NVIDIA RTX) first since it's
+# fastest and lowest-VRAM via its denoiser, then the other vendor backends.
+GPU_DEVICE_ORDER = ["OPTIX", "CUDA", "HIP", "ONEAPI", "METAL"]
+
+
+def configure_device(sc, device):
+    """Point Cycles at a GPU backend. AUTO tries each backend in
+    GPU_DEVICE_ORDER and falls back to CPU if none has a usable device."""
+    if device == "CPU":
+        sc.cycles.device = "CPU"
+        print("cycles device: CPU")
+        return
+    prefs = bpy.context.preferences.addons["cycles"].preferences
+    for dt in (GPU_DEVICE_ORDER if device == "AUTO" else [device]):
+        prefs.compute_device_type = dt
+        prefs.get_devices()
+        found = [d for d in prefs.devices if d.type == dt]
+        if found:
+            for d in prefs.devices:
+                d.use = d.type == dt  # exclude CPU so it doesn't bottleneck the GPU pass
+            sc.cycles.device = "GPU"
+            print(f"cycles device: GPU ({dt}) - {', '.join(d.name for d in found)}")
+            return
+    if device != "AUTO":
+        raise SystemExit(f"--device {device}: no matching device found on this machine "
+                          "(check GPU drivers, or pass --device CPU).")
+    print("cycles device: no GPU backend found, falling back to CPU")
+    sc.cycles.device = "CPU"
+
+
 def main():
     argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else sys.argv[1:]
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -278,6 +312,9 @@ def main():
     ap.add_argument("--frames", nargs=2, type=int, help="override frame range, e.g. for still tests: --frames 30 30")
     ap.add_argument("--scale", type=float, default=1.0, help="resolution multiplier for fast tests, e.g. 0.5")
     ap.add_argument("--samples", type=int, help="override samples")
+    ap.add_argument("--device", default="AUTO",
+                     choices=["AUTO", "CPU", "OPTIX", "CUDA", "HIP", "ONEAPI", "METAL"],
+                     help="Cycles compute device (default: AUTO, tries GPU backends then falls back to CPU)")
     ap.add_argument("--no-webm", action="store_true")
     args = ap.parse_args(argv)
 
@@ -285,7 +322,7 @@ def main():
     bpy.ops.wm.read_factory_settings(use_empty=True)
     sc = bpy.context.scene
     sc.render.engine = "CYCLES"
-    sc.cycles.device = "CPU"
+    configure_device(sc, args.device)
     sc.cycles.samples = args.samples or int(spec.get("samples", 32))
     sc.cycles.use_denoising = True
     try:
