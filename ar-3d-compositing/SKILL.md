@@ -199,6 +199,20 @@ holds for every frame. A moving camera needs a per-frame camera solve
 out of scope for this skill; don't fake it with a static camera over
 moving footage, the objects will visibly slide.
 
+## Neon / glowing objects (only when asked)
+
+Give an object `"emission": {"color": "#3fb8ff", "strength": 9}` in the
+spec to make it self-lit (it also stops casting a shadow). Cycles has no
+bloom, so add the halo in 2D after rendering:
+
+```bash
+python3 scripts/add_glow.py plate.jpg out/render out/glow --color "#3fb8ff" --radii 12 40 120 --strength 1.6
+```
+
+This writes finished composited frames; encode them directly with ffmpeg.
+For small objects on CPU, `render_blender.py --border X0 Y0 X1 Y1` renders
+only that region (fractions, y from top) — often a 5x speedup.
+
 ## Other renders
 
 `composite_ar.py` / `composite_test.py` remain for placing a

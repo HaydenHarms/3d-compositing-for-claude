@@ -108,13 +108,16 @@ def require(d, key, where):
     return d[key]
 
 
-def make_material(name, color_hex, roughness=0.5, metallic=0.0, field="color"):
+def make_material(name, color_hex, roughness=0.5, metallic=0.0, field="color", emission=None):
     mat = bpy.data.materials.new(name)
     mat.use_nodes = True
     bsdf = mat.node_tree.nodes.get("Principled BSDF")
     bsdf.inputs["Base Color"].default_value = (*hex_rgb(color_hex, field), 1.0)
     bsdf.inputs["Roughness"].default_value = float(roughness)
     bsdf.inputs["Metallic"].default_value = float(metallic)
+    if emission:  # {"color": "#rrggbb", "strength": 8} -> self-lit / neon; only when asked for
+        bsdf.inputs["Emission Color"].default_value = (*hex_rgb(emission["color"], f"{field}.emission"), 1.0)
+        bsdf.inputs["Emission Strength"].default_value = float(emission.get("strength", 5.0))
     return mat
 
 
@@ -243,7 +246,10 @@ def build_object(spec, idx):
             sp = cu.splines.new("POLY"); sp.points.add(1)
         ob = bpy.data.objects.new(name, cu)
         bpy.context.collection.objects.link(ob)
-        cu.materials.append(make_material(name, require(spec, "color", where), rough, metal, f"{where}.color"))
+        cu.materials.append(make_material(name, require(spec, "color", where), rough, metal, f"{where}.color",
+                                          spec.get("emission")))
+        if spec.get("emission"):
+            ob.visible_shadow = False  # a light source shouldn't block light
         # joint spheres at the 16 corners so rods meet cleanly
         bpy.ops.mesh.primitive_uv_sphere_add(radius=rod * 1.6, segments=16, ring_count=8)
         joint = bpy.context.active_object; bpy.ops.object.shade_smooth()

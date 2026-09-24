@@ -1,0 +1,64 @@
+{
+ "resolution": [
+  1932,
+  2576
+ ],
+ "fps": 30,
+ "frames": [
+  1,
+  120
+ ],
+ "samples": 24,
+ "camera": {
+  "hfov_deg": 58,
+  "position": [
+   0,
+   0,
+   0.18
+  ],
+  "forward": [
+   0,
+   0.9781476,
+   0.20791169
+  ],
+  "up": [
+   0,
+   -0.20791169,
+   0.9781476
+  ]
+ },
+ "light": {
+  "azimuth_deg": 10,
+  "elevation_deg": 70,
+  "softness_deg": 20,
+  "strength": 2.0,
+  "color": "#f0f0ef",
+  "ambient": 0.9,
+  "ambient_color": "#d9d9d8"
+ },
+ "shadow_strength": 0.3,
+ "objects": [
+  {
+   "type": "tesseract",
+   "name": "tesseract",
+   "size": 0.12,
+   "location": [
+    -0.175,
+    0.5925
+   ],
+   "height": 0.25,
+   "color": "#1e90ff",
+   "roughness": 0.3,
+   "metallic": 0.0,
+   "rod_radius": 0.0048,
+   "w_distance": 2.6,
+   "spin_period": 120,
+   "turn_period": 120,
+   "tilt_deg": 22,
+   "emission": {
+    "color": "#3fb8ff",
+    "strength": 9
+   }
+  }
+ ]
+}
