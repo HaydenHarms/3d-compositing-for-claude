@@ -66,6 +66,10 @@ its own footage (see sample_palette.py), not from this script:
      "colors": ["#2f5d62", "#2f5d62", "#2f5d62", "#e0a458"],
      "roughness": 0.5, "grow": {"start": 10, "stagger": 6, "duration": 18}},
     {"type": "sphere", "radius": 0.08, "location": [0.0, 1.6], "color": "#..."},
+    {"type": "tesseract", "size": 0.12, "location": [0, 0.4], "height": 0.15, "color": "#...",
+     "rod_radius": 0.004, "w_distance": 2.5, "spin_period": 120, "turn_period": 240, "tilt_deg": 20},
+                                        # 4D hypercube spinning through w; origin at its CENTER, so
+                                        # "height" is the center's height above the ground plane
     {"type": "panel", "size": [0.4, 0.25], "location": [...], "height": 0.3, "color": "#...",
      "rotation_deg": 0}
   ]
@@ -220,7 +224,67 @@ def build_object(spec, idx):
         apply_keyframes(parent, spec.get("keyframes"), h)
         return bars
 
-    raise SystemExit(f"{where}: unknown type {t!r} (cube, sphere, panel, bar_chart)")
+    if t == "tesseract":  # 4D hypercube, projected to 3D, spinning through the 4th dimension
+        edge = float(spec.get("size", 0.12))          # edge length of the outer cube, meters
+        rod = float(spec.get("rod_radius", edge * 0.035))
+        wdist = float(spec.get("w_distance", 2.5))   # perspective distance in w (bigger = flatter)
+        period = float(spec.get("spin_period", 120)) # frames per full 4D turn (XW + YW planes)
+        turn3d = float(spec.get("turn_period", 0))   # frames per full 3D turn about Z (0 = none)
+        tilt = math.radians(float(spec.get("tilt_deg", 20)))
+        import itertools
+        verts4 = [list(v) for v in itertools.product((-1, 1), repeat=4)]
+        edges = [(i, j) for i in range(16) for j in range(i + 1, 16)
+                 if sum(a != b for a, b in zip(verts4[i], verts4[j])) == 1]
+        cu = bpy.data.curves.new(name, "CURVE")
+        cu.dimensions = "3D"
+        cu.bevel_depth, cu.bevel_resolution = rod, 4
+        cu.use_fill_caps = True
+        for _ in edges:
+            sp = cu.splines.new("POLY"); sp.points.add(1)
+        ob = bpy.data.objects.new(name, cu)
+        bpy.context.collection.objects.link(ob)
+        cu.materials.append(make_material(name, require(spec, "color", where), rough, metal, f"{where}.color"))
+        # joint spheres at the 16 corners so rods meet cleanly
+        bpy.ops.mesh.primitive_uv_sphere_add(radius=rod * 1.6, segments=16, ring_count=8)
+        joint = bpy.context.active_object; bpy.ops.object.shade_smooth()
+        joint.data.materials.append(cu.materials[0])
+        joints = [joint] + [joint.copy() for _ in range(15)]
+        for j in joints[1:]:
+            bpy.context.collection.objects.link(j)
+        for j in joints:
+            j.parent = ob
+        place(ob, loc, h, rot)
+        base_rot = rot
+
+        def project(f):
+            a = 2 * math.pi * f / period
+            b = a * 0.5
+            out = []
+            for x, y, z, w in verts4:
+                x, w = x * math.cos(a) - w * math.sin(a), x * math.sin(a) + w * math.cos(a)
+                y, w = y * math.cos(b) - w * math.sin(b), y * math.sin(b) + w * math.cos(b)
+                k = 1.0 / (wdist - w)
+                x, y, z = x * k, y * k, z * k
+                y, z = y * math.cos(tilt) - z * math.sin(tilt), y * math.sin(tilt) + z * math.cos(tilt)
+                out.append(Vector((x, y, z)) * (edge / 2) * (wdist - 1))
+            return out
+
+        def update(scene, *_):
+            f = scene.frame_current
+            P = project(f)
+            for sp, (i, j) in zip(cu.splines, edges):
+                sp.points[0].co = (*P[i], 1.0); sp.points[1].co = (*P[j], 1.0)
+            for jo, v in zip(joints, P):
+                jo.location = v
+            if turn3d:
+                ob.rotation_euler[2] = math.radians(base_rot) + 2 * math.pi * f / turn3d
+
+        bpy.app.handlers.frame_change_pre.append(update)
+        update(bpy.context.scene)
+        apply_keyframes(ob, spec.get("keyframes"), h)
+        return [ob]
+
+    raise SystemExit(f"{where}: unknown type {t!r} (cube, sphere, panel, bar_chart, tesseract)")
 
 
 def setup_camera(cam_spec, res):
@@ -315,6 +379,9 @@ def main():
     ap.add_argument("--device", default="AUTO",
                      choices=["AUTO", "CPU", "OPTIX", "CUDA", "HIP", "ONEAPI", "METAL"],
                      help="Cycles compute device (default: AUTO, tries GPU backends then falls back to CPU)")
+    ap.add_argument("--border", nargs=4, type=float, metavar=("X0", "Y0", "X1", "Y1"),
+                     help="only render this region (fractions of width/height, y measured from the TOP); "
+                          "output stays full size and transparent elsewhere. Big CPU saver for small objects")
     ap.add_argument("--no-webm", action="store_true")
     args = ap.parse_args(argv)
 
@@ -337,6 +404,11 @@ def main():
     sc.view_settings.view_transform = "Standard"   # don't tone-map colors picked from footage
     sc.render.image_settings.file_format = "PNG"
     sc.render.image_settings.color_mode = "RGBA"
+    if args.border:
+        x0, y0, x1, y1 = args.border
+        sc.render.use_border, sc.render.use_crop_to_border = True, False
+        sc.render.border_min_x, sc.render.border_max_x = x0, x1
+        sc.render.border_min_y, sc.render.border_max_y = 1 - y1, 1 - y0
     lo, hi = args.frames or spec.get("frames", [1, 1])
     sc.frame_start, sc.frame_end = lo, hi
 
