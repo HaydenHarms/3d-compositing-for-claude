@@ -5,7 +5,7 @@ panels) into real photos and videos so they look physically present: matched
 to the real camera's orientation, lit from the room's own light direction, and
 casting **real** shadows onto the real surface via a Blender shadow catcher.
 
-![example](examples/desk-scene-result.png)
+![example: neon tesseract floating above a desk, casting a real shadow](examples/desk-tesseract.gif)
 
 ## Layout
 
@@ -13,10 +13,11 @@ casting **real** shadows onto the real surface via a Blender shadow catcher.
   - `SKILL.md` — workflow Claude follows
   - `scripts/render_blender.py` — headless Blender renderer driven by a JSON scene spec
   - `scripts/composite_plate.py` — overlays the render on the photo/video plate
+  - `scripts/add_glow.py` — 2D bloom pass for emissive/neon objects
   - `scripts/sample_palette.py` — derives object/light colors from the footage
   - `scripts/estimate_orientation.py` — recovers camera orientation from parallel lines (`--blender` output)
   - `references/talking-head.md` — presenter/gesture videos, green screen, beat mapping
-- `examples/` — a sample scene spec and its render
+- `examples/` — sample scene specs and the README render (`desk-tesseract-scene.json` → `desk-tesseract.gif`)
 
 ## Quick start
 

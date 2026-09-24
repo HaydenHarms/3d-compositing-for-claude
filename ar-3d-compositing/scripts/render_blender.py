@@ -248,8 +248,8 @@ def build_object(spec, idx):
         bpy.context.collection.objects.link(ob)
         cu.materials.append(make_material(name, require(spec, "color", where), rough, metal, f"{where}.color",
                                           spec.get("emission")))
-        if spec.get("emission"):
-            ob.visible_shadow = False  # a light source shouldn't block light
+        if spec.get("emission") and not spec.get("cast_shadow", False):
+            ob.visible_shadow = False  # a light source shouldn't block light (set "cast_shadow": true to keep one)
         # joint spheres at the 16 corners so rods meet cleanly
         bpy.ops.mesh.primitive_uv_sphere_add(radius=rod * 1.6, segments=16, ring_count=8)
         joint = bpy.context.active_object; bpy.ops.object.shade_smooth()

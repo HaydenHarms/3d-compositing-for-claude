@@ -40,7 +40,7 @@ def main():
         glow = np.clip(glow * a.strength / len(a.radii) * 2, 0, 1)
         out = 1 - (1 - P) * (1 - glow)                      # screen
         obj = R[..., :3] + (1 - R[..., :3]) * a.core * lum  # hot core
-        out = out * (1 - al) + np.maximum(obj, out) * al
+        out = out * (1 - al) + obj * al                     # plain "over" keeps caught shadows
         Image.fromarray((np.clip(out, 0, 1) * 255).astype(np.uint8)).save(os.path.join(a.out, os.path.basename(f)))
 
 if __name__ == "__main__":
