@@ -36,3 +36,16 @@ python3 ar-3d-compositing/scripts/composite_plate.py plate.jpg out/still/frame_0
 - Real shadows only — no painted contact shadows.
 - Fixed cameras only (tripod, propped phone, webcam, still photo). Moving
   cameras need a per-frame camera solve first (future work).
+
+## License
+
+The code, scripts, skill instructions, and scene-spec files in this repository
+are released under the [MIT License](LICENSE).
+
+**Images, GIFs, and videos are not covered by the MIT License.** This includes
+everything in `examples/` such as `desk-tesseract.gif`,
+`force-lightning-preview.gif`, and `force-lightning.webm`, plus any photos or
+footage shown in this README. These are © 2026 Hayden Harms, all rights
+reserved. You may not copy, redistribute, modify, or reuse them without
+written permission. Running the scripts on your own footage and using your own
+output is fine.
