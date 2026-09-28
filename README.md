@@ -14,10 +14,11 @@ casting **real** shadows onto the real surface via a Blender shadow catcher.
   - `scripts/render_blender.py` — headless Blender renderer driven by a JSON scene spec
   - `scripts/composite_plate.py` — overlays the render on the photo/video plate
   - `scripts/add_glow.py` — 2D bloom pass for emissive/neon objects
+  - `scripts/lightning_fx.py` — procedural force-lightning asset (transparent loop: PNGs, alpha .webm, ProRes 4444 .mov)
   - `scripts/sample_palette.py` — derives object/light colors from the footage
   - `scripts/estimate_orientation.py` — recovers camera orientation from parallel lines (`--blender` output)
   - `references/talking-head.md` — presenter/gesture videos, green screen, beat mapping
-- `examples/` — sample scene specs and the README render (`desk-tesseract-scene.json` → `desk-tesseract.gif`)
+- `examples/` — sample scene specs and the README render (`desk-tesseract-scene.json` → `desk-tesseract.gif`) and a fingertip lightning asset (`force-lightning.webm`, preview `force-lightning-preview.gif`)
 
 ## Quick start
 
