@@ -357,7 +357,11 @@ def configure_device(sc, device):
         print("cycles device: CPU")
         return
     prefs = bpy.context.preferences.addons["cycles"].preferences
+    # each Blender build only knows its platform's backends (no METAL on Linux)
+    supported = {i.identifier for i in prefs.bl_rna.properties["compute_device_type"].enum_items}
     for dt in (GPU_DEVICE_ORDER if device == "AUTO" else [device]):
+        if dt not in supported:
+            continue
         prefs.compute_device_type = dt
         prefs.get_devices()
         found = [d for d in prefs.devices if d.type == dt]
