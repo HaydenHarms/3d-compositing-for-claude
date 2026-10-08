@@ -7,6 +7,25 @@ casting **real** shadows onto the real surface via a Blender shadow catcher.
 
 ![example: neon tesseract floating above a desk, casting a real shadow](examples/desk-tesseract.gif)
 
+## How it works
+
+1. **Put a real 3D object into a flat photo** with the same angle, the same
+   light, and a real shadow.
+2. **Match the camera.** Find two parallel edges in the footage, see where
+   they meet, and tilt the virtual camera until the lines line up.
+3. **Take colors from the footage.** No house style: the object's colors are
+   sampled from the plate, plus one accent.
+4. **Copy the light.** Read the angle of a real shadow in the scene and put
+   the light on the same side, so the shadows agree.
+5. **Cast a real shadow.** An invisible floor (shadow catcher) lets only the
+   shadow fall through onto the real surface. Nothing is painted on.
+6. **Lay foreground objects back on top.** Cut out anything that should sit in
+   front, like the mug, and layer it over the render so the chart sits behind it.
+
+![How the skill works: insert a 3D object, match the camera, sample colors, copy the light, catch the shadow, re-layer the foreground](docs/how-it-works.png)
+
+<sub>Illustration style credit: [helloianneo/ian-xiaohei-illustrations](https://github.com/helloianneo/ian-xiaohei-illustrations).</sub>
+
 ## Layout
 
 - `ar-3d-compositing/` — the skill itself (drop this folder into Claude's skills)
