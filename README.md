@@ -59,9 +59,9 @@ python3 ar-3d-compositing/scripts/composite_plate.py plate.jpg out/still/frame_0
 ## License
 
 The code, scripts, skill instructions, and scene-spec files in this repository
-are released under the [MIT License](LICENSE).
+are released under the [Mozilla Public License 2.0](LICENSE).
 
-**Images, GIFs, and videos are not covered by the MIT License.** This includes
+**Images, GIFs, and videos are not covered by the MPL-2.0.** This includes
 everything in `examples/` such as `desk-tesseract.gif`,
 `force-lightning-preview.gif`, and `force-lightning.webm`, plus any photos or
 footage shown in this README. These are © 2026 Hayden Harms, all rights
